@@ -106,7 +106,7 @@ interface EventsGridProps {
   onDonateClick: (parishName: string) => void;
 }
 
-const EventsGrid = ({ filters, onDonateClick }: EventsGridProps) => {
+const EventsGrid = ({ filters = { eventTypes: [], timeOfDay: [], neighborhood: "todos-os-bairros", officialOnly: false }, onDonateClick }: EventsGridProps) => {
   // Filter events based on current filters
   const filteredEvents = eventsData.filter((event) => {
     // Filter by event type

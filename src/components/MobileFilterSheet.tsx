@@ -30,7 +30,7 @@ interface MobileFilterSheetProps {
   onFilterChange: (filters: FilterState) => void;
 }
 
-const MobileFilterSheet = ({ filters, onFilterChange }: MobileFilterSheetProps) => {
+const MobileFilterSheet = ({ filters = { eventTypes: [], timeOfDay: [], neighborhood: "todos-os-bairros", officialOnly: false }, onFilterChange }: MobileFilterSheetProps) => {
   const eventTypes = [
     { id: "missa", label: "Missa" },
     { id: "confissao", label: "Confissão" },
