@@ -14,7 +14,172 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      events: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          id: string
+          parish_id: string
+          time: string
+          type: Database["public"]["Enums"]["event_type"]
+          updated_at: string
+          verification_score: number
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          id?: string
+          parish_id: string
+          time: string
+          type: Database["public"]["Enums"]["event_type"]
+          updated_at?: string
+          verification_score?: number
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          id?: string
+          parish_id?: string
+          time?: string
+          type?: Database["public"]["Enums"]["event_type"]
+          updated_at?: string
+          verification_score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_parish_id_fkey"
+            columns: ["parish_id"]
+            isOneToOne: false
+            referencedRelation: "parishes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parishes: {
+        Row: {
+          address: string
+          created_at: string
+          id: string
+          image_url: string | null
+          instagram_url: string | null
+          is_official: boolean
+          lat: number
+          lng: number
+          name: string
+          phone: string | null
+          pix_key: string | null
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          instagram_url?: string | null
+          is_official?: boolean
+          lat: number
+          lng: number
+          name: string
+          phone?: string | null
+          pix_key?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          instagram_url?: string | null
+          is_official?: boolean
+          lat?: number
+          lng?: number
+          name?: string
+          phone?: string | null
+          pix_key?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      suggestions: {
+        Row: {
+          created_at: string
+          event_id: string | null
+          id: string
+          parish_id: string | null
+          status: string
+          suggested_value: string
+          suggestion_type: string
+          user_identifier: string
+        }
+        Insert: {
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          parish_id?: string | null
+          status?: string
+          suggested_value: string
+          suggestion_type: string
+          user_identifier: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          parish_id?: string | null
+          status?: string
+          suggested_value?: string
+          suggestion_type?: string
+          user_identifier?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "suggestions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "suggestions_parish_id_fkey"
+            columns: ["parish_id"]
+            isOneToOne: false
+            referencedRelation: "parishes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      validations: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          user_identifier: string
+          vote_type: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          user_identifier: string
+          vote_type: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          user_identifier?: string
+          vote_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "validations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +188,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      event_type: "Missa" | "Confissão" | "Adoração" | "Terço"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +315,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      event_type: ["Missa", "Confissão", "Adoração", "Terço"],
+    },
   },
 } as const

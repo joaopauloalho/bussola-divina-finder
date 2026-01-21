@@ -13,14 +13,15 @@ interface DonationModalProps {
   isOpen: boolean;
   onClose: () => void;
   parishName: string;
+  pixKey: string;
 }
 
-const DonationModal = ({ isOpen, onClose, parishName }: DonationModalProps) => {
+const DonationModal = ({ isOpen, onClose, parishName, pixKey }: DonationModalProps) => {
   const [copied, setCopied] = useState(false);
-  const pixKey = "00.000.000/0001-99";
+  const displayPixKey = pixKey || "00.000.000/0001-99";
 
   const handleCopyPix = async () => {
-    await navigator.clipboard.writeText(pixKey);
+    await navigator.clipboard.writeText(displayPixKey);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -47,7 +48,7 @@ const DonationModal = ({ isOpen, onClose, parishName }: DonationModalProps) => {
           {/* Pix Key */}
           <div className="w-full p-3 bg-secondary rounded-lg text-center">
             <p className="text-xs text-muted-foreground mb-1">Chave Pix (CNPJ)</p>
-            <p className="font-mono text-foreground font-medium">{pixKey}</p>
+            <p className="font-mono text-foreground font-medium">{displayPixKey}</p>
           </div>
 
           {/* Copy Button */}
