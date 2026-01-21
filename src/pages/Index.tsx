@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import FiltersSidebar from "@/components/FiltersSidebar";
 import EventsGrid from "@/components/EventsGrid";
+import SubscriptionFooter from "@/components/SubscriptionFooter";
 import Footer from "@/components/Footer";
 import DonationModal from "@/components/DonationModal";
 import LoginModal from "@/components/LoginModal";
@@ -13,6 +14,7 @@ const Index = () => {
   const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [selectedParish, setSelectedParish] = useState("");
+  const [selectedPixKey, setSelectedPixKey] = useState("");
 
   // Filter state
   const [filters, setFilters] = useState<FilterState>({
@@ -22,8 +24,9 @@ const Index = () => {
     officialOnly: false,
   });
 
-  const handleDonateClick = (parishName: string) => {
+  const handleDonateClick = (parishName: string, pixKey: string) => {
     setSelectedParish(parishName);
+    setSelectedPixKey(pixKey);
     setIsDonationModalOpen(true);
   };
 
@@ -49,6 +52,9 @@ const Index = () => {
         </div>
       </main>
 
+      {/* Subscription Footer */}
+      <SubscriptionFooter />
+
       <Footer />
 
       {/* Mobile Filter Sheet */}
@@ -59,6 +65,7 @@ const Index = () => {
         isOpen={isDonationModalOpen}
         onClose={() => setIsDonationModalOpen(false)}
         parishName={selectedParish}
+        pixKey={selectedPixKey}
       />
       <LoginModal
         isOpen={isLoginModalOpen}

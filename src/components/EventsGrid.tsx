@@ -2,94 +2,18 @@ import EventCard from "./EventCard";
 import SponsoredCard from "./SponsoredCard";
 import EmptyState from "./EmptyState";
 import { FilterState } from "./MobileFilterSheet";
+import { useEvents, EventWithDetails } from "@/hooks/useEvents";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export interface EventData {
-  time: string;
-  title: string;
-  parishName: string;
-  address: string;
-  distance: string;
-  status: "official" | "community" | "unverified";
-  minutesUntil?: number;
-}
-
-const eventsData: EventData[] = [
-  {
-    time: "07:00",
-    title: "Santa Missa",
-    parishName: "Paróquia Sagrados Corações",
-    address: "Av. Higienópolis, 1234",
-    distance: "800m",
-    status: "official",
-  },
-  {
-    time: "08:30",
-    title: "Confissão",
-    parishName: "Igreja São José Operário",
-    address: "Rua Pará, 567",
-    distance: "1.2km",
-    status: "community",
-  },
-  {
-    time: "10:00",
-    title: "Santa Missa",
-    parishName: "Catedral Metropolitana",
-    address: "Praça Rocha Pombo, 10",
-    distance: "2.5km",
-    status: "official",
-    minutesUntil: 20,
-  },
-  {
-    time: "15:00",
-    title: "Adoração ao Santíssimo",
-    parishName: "Paróquia Nossa Senhora Aparecida",
-    address: "Rua Santos Dumont, 890",
-    distance: "1.8km",
-    status: "official",
-  },
-  {
-    time: "17:30",
-    title: "Terço Mariano",
-    parishName: "Capela São Francisco",
-    address: "Av. JK, 456",
-    distance: "3.1km",
-    status: "unverified",
-  },
-  {
-    time: "19:00",
-    title: "Santa Missa",
-    parishName: "Paróquia Sagrado Coração de Jesus",
-    address: "Rua Sergipe, 234",
-    distance: "1.5km",
-    status: "community",
-    minutesUntil: 45,
-  },
-  {
-    time: "20:00",
-    title: "Confissão",
-    parishName: "Igreja Santa Terezinha",
-    address: "Av. Madre Leônia, 789",
-    distance: "2.0km",
-    status: "official",
-  },
-  {
-    time: "21:00",
-    title: "Adoração Noturna",
-    parishName: "Santuário do Pequeno Cotolengo",
-    address: "Estrada do Limoeiro, km 3",
-    distance: "5.2km",
-    status: "official",
-  },
-];
-
-// Helper function to map event titles to filter types
-const getEventType = (title: string): string => {
-  const lowerTitle = title.toLowerCase();
-  if (lowerTitle.includes("missa")) return "missa";
-  if (lowerTitle.includes("confissão")) return "confissao";
-  if (lowerTitle.includes("adoração")) return "adoracao";
-  if (lowerTitle.includes("terço")) return "terco";
-  return "";
+// Helper function to map event types to filter types
+const getEventTypeFilter = (type: string): string => {
+  const typeMap: Record<string, string> = {
+    "Missa": "missa",
+    "Confissão": "confissao",
+    "Adoração": "adoracao",
+    "Terço": "terco",
+  };
+  return typeMap[type] || "";
 };
 
 // Helper function to get time of day from event time
@@ -103,15 +27,20 @@ const getTimeOfDay = (time: string): string => {
 
 interface EventsGridProps {
   filters: FilterState;
-  onDonateClick: (parishName: string) => void;
+  onDonateClick: (parishName: string, pixKey: string) => void;
 }
 
-const EventsGrid = ({ filters = { eventTypes: [], timeOfDay: [], neighborhood: "todos-os-bairros", officialOnly: false }, onDonateClick }: EventsGridProps) => {
+const EventsGrid = ({ 
+  filters = { eventTypes: [], timeOfDay: [], neighborhood: "todos-os-bairros", officialOnly: false }, 
+  onDonateClick 
+}: EventsGridProps) => {
+  const { data: events, isLoading, error } = useEvents();
+
   // Filter events based on current filters
-  const filteredEvents = eventsData.filter((event) => {
+  const filteredEvents = (events || []).filter((event: EventWithDetails) => {
     // Filter by event type
     if (filters.eventTypes.length > 0) {
-      const eventType = getEventType(event.title);
+      const eventType = getEventTypeFilter(event.type);
       if (!filters.eventTypes.includes(eventType)) {
         return false;
       }
@@ -119,19 +48,60 @@ const EventsGrid = ({ filters = { eventTypes: [], timeOfDay: [], neighborhood: "
 
     // Filter by time of day
     if (filters.timeOfDay.length > 0) {
-      const timeOfDay = getTimeOfDay(event.time);
+      const timeOfDay = getTimeOfDay(event.formattedTime);
       if (!filters.timeOfDay.includes(timeOfDay)) {
         return false;
       }
     }
 
     // Filter by official only
-    if (filters.officialOnly && event.status !== "official") {
+    if (filters.officialOnly && !event.parish.is_official) {
       return false;
     }
 
     return true;
   });
+
+  if (isLoading) {
+    return (
+      <div className="flex-1">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-foreground">
+            Próximos Eventos
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="bg-card rounded-xl p-4 card-shadow">
+              <Skeleton className="h-8 w-20 mb-3" />
+              <Skeleton className="h-6 w-32 mb-2" />
+              <Skeleton className="h-4 w-48 mb-2" />
+              <Skeleton className="h-4 w-40 mb-4" />
+              <div className="flex gap-2">
+                <Skeleton className="h-10 flex-1" />
+                <Skeleton className="h-10 flex-1" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex-1">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-foreground">
+            Próximos Eventos
+          </h2>
+        </div>
+        <div className="text-center py-12 text-destructive">
+          Erro ao carregar eventos. Tente novamente mais tarde.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1">
@@ -148,11 +118,23 @@ const EventsGrid = ({ filters = { eventTypes: [], timeOfDay: [], neighborhood: "
         <EmptyState />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filteredEvents.map((event, index) => {
+          {filteredEvents.map((event: EventWithDetails, index: number) => {
             const elements = [
               <EventCard
-                key={`event-${index}`}
-                {...event}
+                key={`event-${event.id}`}
+                id={event.id}
+                time={event.formattedTime}
+                title={event.type}
+                parishId={event.parish.id}
+                parishName={event.parish.name}
+                address={event.parish.address}
+                distance={event.distance}
+                status={event.status}
+                minutesUntil={event.minutesUntil}
+                verificationScore={event.verification_score}
+                lat={event.parish.lat}
+                lng={event.parish.lng}
+                pixKey={event.parish.pix_key}
                 onDonateClick={onDonateClick}
               />,
             ];
