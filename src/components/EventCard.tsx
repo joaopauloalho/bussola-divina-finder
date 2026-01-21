@@ -11,6 +11,7 @@ interface EventCardProps {
   distance: string;
   status: "official" | "community" | "unverified";
   minutesUntil?: number;
+  onDonateClick: (parishName: string) => void;
 }
 
 const EventCard = ({
@@ -21,6 +22,7 @@ const EventCard = ({
   distance,
   status,
   minutesUntil,
+  onDonateClick,
 }: EventCardProps) => {
   const statusConfig = {
     official: {
@@ -46,6 +48,15 @@ const EventCard = ({
   const currentStatus = statusConfig[status];
   const StatusIcon = currentStatus.icon;
   const isLive = minutesUntil !== undefined && minutesUntil <= 60;
+
+  const handleNavigate = () => {
+    const query = encodeURIComponent(`${parishName}, ${address}, Londrina, PR`);
+    window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, "_blank");
+  };
+
+  const handleDonate = () => {
+    onDonateClick(parishName);
+  };
 
   return (
     <article
@@ -96,11 +107,15 @@ const EventCard = ({
 
       {/* Action Buttons */}
       <div className="p-4 pt-2 flex gap-2">
-        <Button className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground">
+        <Button
+          onClick={handleNavigate}
+          className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
+        >
           <Navigation className="h-4 w-4 mr-2" />
           Navegar
         </Button>
         <Button
+          onClick={handleDonate}
           variant="outline"
           className="flex-1 border-accent text-accent hover:bg-accent hover:text-accent-foreground"
         >

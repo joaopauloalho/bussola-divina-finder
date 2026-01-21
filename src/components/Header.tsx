@@ -2,7 +2,11 @@ import { Cross, Search, User, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-const Header = () => {
+interface HeaderProps {
+  onLoginClick: () => void;
+}
+
+const Header = ({ onLoginClick }: HeaderProps) => {
   return (
     <header className="sticky top-0 z-50 w-full bg-card border-b border-border header-shadow">
       <div className="container flex h-16 items-center justify-between gap-4">
@@ -33,7 +37,12 @@ const Header = () => {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2 shrink-0">
-          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground hover:text-primary"
+            onClick={onLoginClick}
+          >
             <User className="h-4 w-4 mr-2" />
             <span className="hidden sm:inline">Login Paróquia</span>
           </Button>
