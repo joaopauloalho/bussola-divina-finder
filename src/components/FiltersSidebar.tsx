@@ -16,7 +16,7 @@ interface FiltersSidebarProps {
   onFilterChange: (filters: FilterState) => void;
 }
 
-const FiltersSidebar = ({ filters, onFilterChange }: FiltersSidebarProps) => {
+const FiltersSidebar = ({ filters = { eventTypes: [], timeOfDay: [], neighborhood: "todos-os-bairros", officialOnly: false }, onFilterChange }: FiltersSidebarProps) => {
   const eventTypes = [
     { id: "missa", label: "Missa" },
     { id: "confissao", label: "Confissão" },
