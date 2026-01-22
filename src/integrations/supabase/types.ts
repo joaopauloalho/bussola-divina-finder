@@ -55,13 +55,50 @@ export type Database = {
           },
         ]
       }
+      parish_images: {
+        Row: {
+          caption: string | null
+          created_at: string
+          display_order: number | null
+          id: string
+          image_url: string
+          parish_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          image_url: string
+          parish_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          image_url?: string
+          parish_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parish_images_parish_id_fkey"
+            columns: ["parish_id"]
+            isOneToOne: false
+            referencedRelation: "parishes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       parishes: {
         Row: {
           address: string
           created_at: string
+          description: string | null
           id: string
           image_url: string | null
           instagram_url: string | null
+          instagram_username: string | null
           is_official: boolean
           lat: number
           lng: number
@@ -69,13 +106,17 @@ export type Database = {
           phone: string | null
           pix_key: string | null
           updated_at: string
+          website_url: string | null
+          whatsapp: string | null
         }
         Insert: {
           address: string
           created_at?: string
+          description?: string | null
           id?: string
           image_url?: string | null
           instagram_url?: string | null
+          instagram_username?: string | null
           is_official?: boolean
           lat: number
           lng: number
@@ -83,13 +124,17 @@ export type Database = {
           phone?: string | null
           pix_key?: string | null
           updated_at?: string
+          website_url?: string | null
+          whatsapp?: string | null
         }
         Update: {
           address?: string
           created_at?: string
+          description?: string | null
           id?: string
           image_url?: string | null
           instagram_url?: string | null
+          instagram_username?: string | null
           is_official?: boolean
           lat?: number
           lng?: number
@@ -97,8 +142,92 @@ export type Database = {
           phone?: string | null
           pix_key?: string | null
           updated_at?: string
+          website_url?: string | null
+          whatsapp?: string | null
         }
         Relationships: []
+      }
+      pastoral_schedules: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          id: string
+          location: string | null
+          pastoral_id: string
+          start_time: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          id?: string
+          location?: string | null
+          pastoral_id: string
+          start_time: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          id?: string
+          location?: string | null
+          pastoral_id?: string
+          start_time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pastoral_schedules_pastoral_id_fkey"
+            columns: ["pastoral_id"]
+            isOneToOne: false
+            referencedRelation: "pastorals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pastorals: {
+        Row: {
+          created_at: string
+          description: string | null
+          email: string | null
+          icon: string | null
+          id: string
+          leader_name: string | null
+          name: string
+          parish_id: string
+          updated_at: string
+          whatsapp: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          icon?: string | null
+          id?: string
+          leader_name?: string | null
+          name: string
+          parish_id: string
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          icon?: string | null
+          id?: string
+          leader_name?: string | null
+          name?: string
+          parish_id?: string
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pastorals_parish_id_fkey"
+            columns: ["parish_id"]
+            isOneToOne: false
+            referencedRelation: "parishes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       suggestions: {
         Row: {

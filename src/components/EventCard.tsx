@@ -115,7 +115,12 @@ const EventCard = ({
           <div className="space-y-2">
             <h3 className="text-lg font-semibold text-foreground">{title}</h3>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">{parishName}</span>
+              <a 
+                href={`/paroquia/${parishId}`}
+                className="text-sm text-muted-foreground hover:text-primary hover:underline transition-colors"
+              >
+                {parishName}
+              </a>
               <Badge
                 variant="outline"
                 className={cn("text-xs px-1.5 py-0", currentStatus.badgeClass)}
