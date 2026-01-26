@@ -3,7 +3,9 @@ import SponsoredCard from "./SponsoredCard";
 import EmptyState from "./EmptyState";
 import { FilterState } from "./MobileFilterSheet";
 import { useEvents, EventWithDetails } from "@/hooks/useEvents";
+import { useGeolocation } from "@/hooks/useGeolocation";
 import { Skeleton } from "@/components/ui/skeleton";
+import { MapPin, MapPinOff } from "lucide-react";
 
 // Helper function to map event types to filter types
 const getEventTypeFilter = (type: string): string => {
@@ -31,13 +33,19 @@ interface EventsGridProps {
 }
 
 const EventsGrid = ({ 
-  filters = { eventTypes: [], timeOfDay: [], neighborhood: "todos-os-bairros", officialOnly: false }, 
+  filters = { eventTypes: [], timeOfDay: [], neighborhood: "todos-os-bairros", officialOnly: false, dayOfWeek: null }, 
   onDonateClick 
 }: EventsGridProps) => {
-  const { data: events, isLoading, error } = useEvents();
+  const { location, loading: locationLoading } = useGeolocation();
+  const { data: events, isLoading, error } = useEvents(location);
 
   // Filter events based on current filters
   const filteredEvents = (events || []).filter((event: EventWithDetails) => {
+    // Filter by day of week
+    if (filters.dayOfWeek !== null && event.day_of_week !== filters.dayOfWeek) {
+      return false;
+    }
+
     // Filter by event type
     if (filters.eventTypes.length > 0) {
       const eventType = getEventTypeFilter(event.type);
@@ -109,9 +117,27 @@ const EventsGrid = ({
         <h2 className="text-xl font-semibold text-foreground">
           Próximos Eventos
         </h2>
-        <span className="text-sm text-muted-foreground">
-          {filteredEvents.length} resultados
-        </span>
+        <div className="flex items-center gap-3">
+          {/* Location indicator */}
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            {locationLoading ? (
+              <span>Buscando localização...</span>
+            ) : location ? (
+              <>
+                <MapPin className="h-3 w-3 text-success" />
+                <span>Ordenado por distância</span>
+              </>
+            ) : (
+              <>
+                <MapPinOff className="h-3 w-3" />
+                <span>Localização indisponível</span>
+              </>
+            )}
+          </div>
+          <span className="text-sm text-muted-foreground">
+            {filteredEvents.length} resultados
+          </span>
+        </div>
       </div>
 
       {filteredEvents.length === 0 ? (

@@ -16,12 +16,13 @@ const Index = () => {
   const [selectedParish, setSelectedParish] = useState("");
   const [selectedPixKey, setSelectedPixKey] = useState("");
 
-  // Filter state
+  // Filter state - default to today
   const [filters, setFilters] = useState<FilterState>({
     eventTypes: ["missa", "confissao", "adoracao", "terco"],
     timeOfDay: [],
     neighborhood: "todos-os-bairros",
     officialOnly: false,
+    dayOfWeek: new Date().getDay(), // Default to today
   });
 
   const handleDonateClick = (parishName: string, pixKey: string) => {
