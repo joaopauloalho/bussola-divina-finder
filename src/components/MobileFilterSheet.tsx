@@ -1,4 +1,4 @@
-import { Filter } from "lucide-react";
+import { Filter, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -17,12 +17,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 export interface FilterState {
   eventTypes: string[];
   timeOfDay: string[];
   neighborhood: string;
   officialOnly: boolean;
+  dayOfWeek: number | null; // null = all days, 0-6 = specific day
 }
 
 interface MobileFilterSheetProps {
@@ -30,7 +32,19 @@ interface MobileFilterSheetProps {
   onFilterChange: (filters: FilterState) => void;
 }
 
-const MobileFilterSheet = ({ filters = { eventTypes: [], timeOfDay: [], neighborhood: "todos-os-bairros", officialOnly: false }, onFilterChange }: MobileFilterSheetProps) => {
+const daysOfWeek = [
+  { id: 0, short: "Dom", full: "Domingo" },
+  { id: 1, short: "Seg", full: "Segunda" },
+  { id: 2, short: "Ter", full: "Terça" },
+  { id: 3, short: "Qua", full: "Quarta" },
+  { id: 4, short: "Qui", full: "Quinta" },
+  { id: 5, short: "Sex", full: "Sexta" },
+  { id: 6, short: "Sáb", full: "Sábado" },
+];
+
+const MobileFilterSheet = ({ filters = { eventTypes: [], timeOfDay: [], neighborhood: "todos-os-bairros", officialOnly: false, dayOfWeek: null }, onFilterChange }: MobileFilterSheetProps) => {
+  const today = new Date().getDay();
+  
   const eventTypes = [
     { id: "missa", label: "Missa" },
     { id: "confissao", label: "Confissão" },
@@ -88,6 +102,56 @@ const MobileFilterSheet = ({ filters = { eventTypes: [], timeOfDay: [], neighbor
         </SheetHeader>
 
         <div className="mt-6 space-y-6">
+          {/* Day of Week */}
+          <div>
+            <h3 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              Dia da Semana
+            </h3>
+            <div className="space-y-2">
+              <button
+                onClick={() => onFilterChange({ ...filters, dayOfWeek: today })}
+                className={`w-full py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                  filters.dayOfWeek === today
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-muted-foreground hover:bg-secondary/80"
+                }`}
+              >
+                Hoje ({daysOfWeek[today].full})
+              </button>
+              <ToggleGroup
+                type="single"
+                value={filters.dayOfWeek?.toString() ?? ""}
+                onValueChange={(value) =>
+                  onFilterChange({
+                    ...filters,
+                    dayOfWeek: value === "" ? null : parseInt(value, 10),
+                  })
+                }
+                className="flex flex-wrap gap-1"
+              >
+                {daysOfWeek.map((day) => (
+                  <ToggleGroupItem
+                    key={day.id}
+                    value={day.id.toString()}
+                    size="sm"
+                    className="flex-1 min-w-[40px] text-xs"
+                  >
+                    {day.short}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+              {filters.dayOfWeek !== null && (
+                <button
+                  onClick={() => onFilterChange({ ...filters, dayOfWeek: null })}
+                  className="w-full py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Mostrar todos os dias
+                </button>
+              )}
+            </div>
+          </div>
+
           {/* Event Type */}
           <div>
             <h3 className="text-sm font-medium text-foreground mb-3">

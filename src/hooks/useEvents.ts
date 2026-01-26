@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useGeolocation, calculateHaversineDistance, formatDistance, UserLocation } from "@/hooks/useGeolocation";
 
 export interface Parish {
   id: string;
@@ -28,6 +29,7 @@ export interface Event {
 export interface EventWithDetails extends Event {
   formattedTime: string;
   distance: string;
+  distanceKm: number;
   status: "official" | "community" | "unverified";
   minutesUntil?: number;
 }
@@ -42,12 +44,32 @@ const getUserIdentifier = (): string => {
   return identifier;
 };
 
-// Calculate distance (simplified - in a real app you'd use actual geolocation)
-const calculateDistance = (lat: number, lng: number): string => {
-  // Simulated distance calculation
-  const baseDistance = Math.abs(lat + 23.3) * 100 + Math.abs(lng + 51.17) * 100;
-  if (baseDistance < 1) return `${Math.round(baseDistance * 1000)}m`;
-  return `${baseDistance.toFixed(1)}km`;
+// Calculate distance using real geolocation or fallback
+const calculateDistance = (
+  parishLat: number,
+  parishLng: number,
+  userLocation: UserLocation | null
+): { formatted: string; km: number } => {
+  if (!userLocation) {
+    // Fallback: use a default location in Londrina center
+    const defaultLat = -23.3045;
+    const defaultLng = -51.1696;
+    const distanceKm = calculateHaversineDistance(
+      defaultLat,
+      defaultLng,
+      parishLat,
+      parishLng
+    );
+    return { formatted: formatDistance(distanceKm), km: distanceKm };
+  }
+
+  const distanceKm = calculateHaversineDistance(
+    userLocation.lat,
+    userLocation.lng,
+    parishLat,
+    parishLng
+  );
+  return { formatted: formatDistance(distanceKm), km: distanceKm };
 };
 
 // Calculate minutes until event
@@ -66,9 +88,9 @@ const calculateMinutesUntil = (eventTime: string): number | undefined => {
   return undefined;
 };
 
-export const useEvents = () => {
+export const useEvents = (userLocation: UserLocation | null = null) => {
   return useQuery({
-    queryKey: ["events"],
+    queryKey: ["events", userLocation?.lat, userLocation?.lng],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("events")
@@ -84,7 +106,11 @@ export const useEvents = () => {
       const eventsWithDetails: EventWithDetails[] = (data || []).map((event: any) => {
         const parish = event.parish as Parish;
         const formattedTime = event.time.substring(0, 5); // HH:MM format
-        const distance = calculateDistance(parish.lat, parish.lng);
+        const { formatted: distance, km: distanceKm } = calculateDistance(
+          parish.lat,
+          parish.lng,
+          userLocation
+        );
         
         // Determine status based on is_official and verification_score
         let status: "official" | "community" | "unverified";
@@ -101,12 +127,14 @@ export const useEvents = () => {
           parish,
           formattedTime,
           distance,
+          distanceKm,
           status,
           minutesUntil: calculateMinutesUntil(formattedTime),
         };
       });
 
-      return eventsWithDetails;
+      // Sort by distance
+      return eventsWithDetails.sort((a, b) => a.distanceKm - b.distanceKm);
     },
   });
 };
