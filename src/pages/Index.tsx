@@ -7,12 +7,14 @@ import SubscriptionFooter from "@/components/SubscriptionFooter";
 import Footer from "@/components/Footer";
 import DonationModal from "@/components/DonationModal";
 import LoginModal from "@/components/LoginModal";
+import NewSuggestionModal from "@/components/NewSuggestionModal";
 import MobileFilterSheet, { FilterState } from "@/components/MobileFilterSheet";
 
 const Index = () => {
   // Modal states
   const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isNewSuggestionModalOpen, setIsNewSuggestionModalOpen] = useState(false);
   const [selectedParish, setSelectedParish] = useState("");
   const [selectedPixKey, setSelectedPixKey] = useState("");
 
@@ -35,6 +37,10 @@ const Index = () => {
     setIsLoginModalOpen(true);
   };
 
+  const handleSuggestClick = () => {
+    setIsNewSuggestionModalOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header onLoginClick={handleLoginClick} />
@@ -49,14 +55,18 @@ const Index = () => {
           </div>
           
           {/* Events Grid */}
-          <EventsGrid filters={filters} onDonateClick={handleDonateClick} />
+          <EventsGrid 
+            filters={filters} 
+            onDonateClick={handleDonateClick} 
+            onSuggestClick={handleSuggestClick}
+          />
         </div>
       </main>
 
       {/* Subscription Footer */}
       <SubscriptionFooter />
 
-      <Footer />
+      <Footer onSuggestClick={handleSuggestClick} />
 
       {/* Mobile Filter Sheet */}
       <MobileFilterSheet filters={filters} onFilterChange={setFilters} />
@@ -71,6 +81,10 @@ const Index = () => {
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
+      />
+      <NewSuggestionModal
+        isOpen={isNewSuggestionModalOpen}
+        onClose={() => setIsNewSuggestionModalOpen(false)}
       />
     </div>
   );

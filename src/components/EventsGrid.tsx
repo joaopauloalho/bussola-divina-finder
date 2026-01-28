@@ -30,11 +30,13 @@ const getTimeOfDay = (time: string): string => {
 interface EventsGridProps {
   filters: FilterState;
   onDonateClick: (parishName: string, pixKey: string) => void;
+  onSuggestClick?: () => void;
 }
 
 const EventsGrid = ({ 
   filters = { eventTypes: [], timeOfDay: [], neighborhood: "todos-os-bairros", officialOnly: false, dayOfWeek: null }, 
-  onDonateClick 
+  onDonateClick,
+  onSuggestClick,
 }: EventsGridProps) => {
   const { location, loading: locationLoading } = useGeolocation();
   const { data: events, isLoading, error } = useEvents(location);
@@ -141,7 +143,7 @@ const EventsGrid = ({
       </div>
 
       {filteredEvents.length === 0 ? (
-        <EmptyState />
+        <EmptyState onSuggestClick={onSuggestClick} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filteredEvents.map((event: EventWithDetails, index: number) => {

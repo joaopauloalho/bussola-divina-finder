@@ -1,6 +1,10 @@
 import { Cross, Heart } from "lucide-react";
 
-const Footer = () => {
+interface FooterProps {
+  onSuggestClick?: () => void;
+}
+
+const Footer = ({ onSuggestClick }: FooterProps) => {
   const currentYear = new Date().getFullYear();
 
   return (
@@ -52,6 +56,14 @@ const Footer = () => {
                 >
                   Verificação Diocesana
                 </a>
+              </li>
+              <li>
+                <button
+                  onClick={onSuggestClick}
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors text-left"
+                >
+                  Sugerir Paróquia/Pastoral
+                </button>
               </li>
             </ul>
           </div>
