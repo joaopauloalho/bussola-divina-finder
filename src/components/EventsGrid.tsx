@@ -75,11 +75,6 @@ const EventsGrid = ({
   if (isLoading) {
     return (
       <div className="flex-1">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-foreground">
-            Próximos Eventos
-          </h2>
-        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="bg-card rounded-xl p-4 card-shadow">
@@ -101,11 +96,6 @@ const EventsGrid = ({
   if (error) {
     return (
       <div className="flex-1">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-foreground">
-            Próximos Eventos
-          </h2>
-        </div>
         <div className="text-center py-12 text-destructive">
           Erro ao carregar eventos. Tente novamente mais tarde.
         </div>
@@ -115,31 +105,27 @@ const EventsGrid = ({
 
   return (
     <div className="flex-1">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-foreground">
-          Próximos Eventos
-        </h2>
-        <div className="flex items-center gap-3">
-          {/* Location indicator */}
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            {locationLoading ? (
-              <span>Buscando localização...</span>
-            ) : location ? (
-              <>
-                <MapPin className="h-3 w-3 text-success" />
-                <span>Ordenado por distância</span>
-              </>
-            ) : (
-              <>
-                <MapPinOff className="h-3 w-3" />
-                <span>Localização indisponível</span>
-              </>
-            )}
-          </div>
-          <span className="text-sm text-muted-foreground">
-            {filteredEvents.length} resultados
-          </span>
+      {/* Location and results info */}
+      <div className="flex items-center justify-end gap-3 mb-4">
+        {/* Location indicator */}
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          {locationLoading ? (
+            <span>Buscando localização...</span>
+          ) : location ? (
+            <>
+              <MapPin className="h-3 w-3 text-success" />
+              <span>Ordenado por distância</span>
+            </>
+          ) : (
+            <>
+              <MapPinOff className="h-3 w-3" />
+              <span>Localização indisponível</span>
+            </>
+          )}
         </div>
+        <span className="text-sm text-muted-foreground">
+          {filteredEvents.length} resultados
+        </span>
       </div>
 
       {filteredEvents.length === 0 ? (
