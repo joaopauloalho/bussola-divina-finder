@@ -167,3 +167,31 @@
     text-wrap: balance;
   }
 }
+
+/* Leaflet Custom Styles */
+.custom-parish-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.leaflet-popup-content-wrapper {
+  @apply bg-card text-card-foreground rounded-xl shadow-lg border border-border p-0 overflow-hidden;
+}
+
+.leaflet-popup-content {
+  margin: 12px !important;
+}
+
+.leaflet-popup-tip {
+  @apply bg-card;
+}
+
+.leaflet-popup-close-button {
+  @apply text-muted-foreground hover:text-foreground !important;
+  top: 8px !important;
+  right: 8px !important;
+}
+
+.leaflet-container {
+  font-family: 'Inter', system-ui, sans-serif;
+}
