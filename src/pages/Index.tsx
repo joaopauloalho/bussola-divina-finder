@@ -3,6 +3,8 @@ import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import FiltersSidebar from "@/components/FiltersSidebar";
 import EventsGrid from "@/components/EventsGrid";
+import ParishMap from "@/components/ParishMap";
+import ViewToggle, { ViewMode } from "@/components/ViewToggle";
 import SubscriptionFooter from "@/components/SubscriptionFooter";
 import Footer from "@/components/Footer";
 import DonationModal from "@/components/DonationModal";
@@ -17,6 +19,9 @@ const Index = () => {
   const [isNewSuggestionModalOpen, setIsNewSuggestionModalOpen] = useState(false);
   const [selectedParish, setSelectedParish] = useState("");
   const [selectedPixKey, setSelectedPixKey] = useState("");
+
+  // View mode state
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
 
   // Filter state - default to today
   const [filters, setFilters] = useState<FilterState>({
@@ -54,12 +59,27 @@ const Index = () => {
             <FiltersSidebar filters={filters} onFilterChange={setFilters} />
           </div>
           
-          {/* Events Grid */}
-          <EventsGrid 
-            filters={filters} 
-            onDonateClick={handleDonateClick} 
-            onSuggestClick={handleSuggestClick}
-          />
+          {/* Events Content */}
+          <div className="flex-1">
+            {/* Header with toggle */}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-foreground">
+                {viewMode === "list" ? "Próximos Eventos" : "Paróquias no Mapa"}
+              </h2>
+              <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
+            </div>
+            
+            {/* Content based on view mode */}
+            {viewMode === "list" ? (
+              <EventsGrid 
+                filters={filters} 
+                onDonateClick={handleDonateClick} 
+                onSuggestClick={handleSuggestClick}
+              />
+            ) : (
+              <ParishMap />
+            )}
+          </div>
         </div>
       </main>
 
