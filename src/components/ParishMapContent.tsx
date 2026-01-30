@@ -1,8 +1,7 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import { useNavigate } from "react-router-dom";
-import { Church } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEvents } from "@/hooks/useEvents";
 import { useGeolocation, UserLocation } from "@/hooks/useGeolocation";
@@ -35,7 +34,7 @@ interface ParishMarker {
 }
 
 // Component to recenter map when user location changes
-const MapRecenter = ({ center }: { center: [number, number] }) => {
+function MapRecenter({ center }: { center: [number, number] }) {
   const map = useMap();
   
   useEffect(() => {
@@ -43,19 +42,20 @@ const MapRecenter = ({ center }: { center: [number, number] }) => {
   }, [center, map]);
   
   return null;
-};
+}
 
 // SVG icons as strings for markers
 const starIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
 const churchIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 7 4 2v11a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9l4-2"/><path d="M14 22v-4a2 2 0 0 0-4 0v4"/><path d="M18 22V5l-6-3-6 3v17"/><path d="M12 7v5"/><path d="M10 9h4"/></svg>`;
 const navigationIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>`;
+const churchPlaceholderSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: #9ca3af;"><path d="m18 7 4 2v11a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9l4-2"/><path d="M14 22v-4a2 2 0 0 0-4 0v4"/><path d="M18 22V5l-6-3-6 3v17"/><path d="M12 7v5"/><path d="M10 9h4"/></svg>`;
 
 // Create custom div icons for markers using inline HTML
-const createCustomIcon = (status: "official" | "community" | "unverified") => {
+function createCustomIcon(status: "official" | "community" | "unverified") {
   const isOfficial = status === "official";
-  const bgColor = isOfficial ? "#fbbf24" : "#2563eb"; // amber-400 or primary blue
-  const borderColor = isOfficial ? "#f59e0b" : "#1d4ed8"; // amber-500 or darker blue
-  const iconColor = isOfficial ? "#92400e" : "#ffffff"; // amber-800 or white
+  const bgColor = isOfficial ? "#fbbf24" : "#2563eb";
+  const borderColor = isOfficial ? "#f59e0b" : "#1d4ed8";
+  const iconColor = isOfficial ? "#92400e" : "#ffffff";
   const pinTailColor = bgColor;
   
   const iconSvg = isOfficial ? starIconSvg : churchIconSvg;
@@ -97,10 +97,10 @@ const createCustomIcon = (status: "official" | "community" | "unverified") => {
     iconAnchor: [20, 52],
     popupAnchor: [0, -52],
   });
-};
+}
 
-// Create user location icon using inline HTML with pulsing effect
-const createUserLocationIcon = () => {
+// Create user location icon
+function createUserLocationIcon() {
   const iconHtml = `
     <div style="position: relative; width: 48px; height: 48px;">
       <div style="
@@ -141,30 +141,16 @@ const createUserLocationIcon = () => {
     iconSize: [48, 48],
     iconAnchor: [24, 24],
   });
-};
+}
 
-// User location marker component - simplified without CircleMarker
-const UserLocationMarker = ({ location }: { location: UserLocation }) => {
-  const userIcon = useMemo(() => createUserLocationIcon(), []);
-  
-  return (
-    <Marker
-      position={[location.lat, location.lng]}
-      icon={userIcon}
-    >
-      <Popup>
-        <div className="text-center py-1">
-          <p className="font-medium text-sm">Você está aqui</p>
-        </div>
-      </Popup>
-    </Marker>
-  );
-};
+// Memoized icons
+const userLocationIcon = createUserLocationIcon();
 
-const ParishMapContent = () => {
+function ParishMapContent() {
   const navigate = useNavigate();
   const { location } = useGeolocation();
   const { data: events } = useEvents(location);
+  const [isMapReady, setIsMapReady] = useState(false);
 
   // Group events by parish and get unique parishes with their next event
   const parishes = useMemo<ParishMarker[]>(() => {
@@ -175,7 +161,6 @@ const ParishMapContent = () => {
 
     events.forEach((event) => {
       if (!parishMap.has(event.parish.id)) {
-        // Find next event for this parish (today)
         const todayEvents = events.filter(
           (e) => e.parish.id === event.parish.id && e.day_of_week === today
         );
@@ -206,6 +191,15 @@ const ParishMapContent = () => {
     return LONDRINA_CENTER;
   }, [location]);
 
+  // Create parish icons
+  const parishIcons = useMemo(() => {
+    const icons: Record<string, L.DivIcon> = {};
+    parishes.forEach((parish) => {
+      icons[parish.id] = createCustomIcon(parish.status);
+    });
+    return icons;
+  }, [parishes]);
+
   return (
     <div className="w-full h-[300px] md:h-[400px] rounded-xl overflow-hidden shadow-lg">
       <MapContainer
@@ -213,6 +207,7 @@ const ParishMapContent = () => {
         zoom={DEFAULT_ZOOM}
         scrollWheelZoom={true}
         className="w-full h-full z-0"
+        whenReady={() => setIsMapReady(true)}
       >
         <TileLayer
           attribution='&copy; <a href="https://carto.com/">CARTO</a>'
@@ -221,61 +216,71 @@ const ParishMapContent = () => {
         <MapRecenter center={mapCenter} />
         
         {/* User location marker */}
-        {location && <UserLocationMarker location={location} />}
+        {isMapReady && location && (
+          <Marker
+            position={[location.lat, location.lng]}
+            icon={userLocationIcon}
+          >
+            <Popup>
+              <div className="text-center py-1">
+                <p className="font-medium text-sm">Você está aqui</p>
+              </div>
+            </Popup>
+          </Marker>
+        )}
         
         {/* Parish markers */}
-        {parishes.map((parish) => {
-          const icon = createCustomIcon(parish.status);
-          return (
-            <Marker
-              key={parish.id}
-              position={[parish.lat, parish.lng]}
-              icon={icon}
-            >
-              <Popup className="parish-popup">
-                <div className="min-w-[200px] max-w-[250px]">
-                  {/* Thumbnail */}
-                  {parish.imageUrl ? (
-                    <img
-                      src={parish.imageUrl}
-                      alt={parish.name}
-                      className="w-full h-24 object-cover rounded-t-lg -mt-3 -mx-3 mb-3"
-                      style={{ width: "calc(100% + 24px)" }}
-                    />
-                  ) : (
-                    <div className="w-full h-24 bg-muted rounded-t-lg -mt-3 -mx-3 mb-3 flex items-center justify-center" style={{ width: "calc(100% + 24px)" }}>
-                      <Church className="w-8 h-8 text-muted-foreground" />
-                    </div>
+        {isMapReady && parishes.map((parish) => (
+          <Marker
+            key={parish.id}
+            position={[parish.lat, parish.lng]}
+            icon={parishIcons[parish.id]}
+          >
+            <Popup>
+              <div className="min-w-[200px] max-w-[250px]">
+                {/* Thumbnail */}
+                {parish.imageUrl ? (
+                  <img
+                    src={parish.imageUrl}
+                    alt={parish.name}
+                    className="w-full h-24 object-cover rounded-t-lg -mt-3 -mx-3 mb-3"
+                    style={{ width: "calc(100% + 24px)" }}
+                  />
+                ) : (
+                  <div 
+                    className="w-full h-24 bg-muted rounded-t-lg -mt-3 -mx-3 mb-3 flex items-center justify-center" 
+                    style={{ width: "calc(100% + 24px)" }}
+                    dangerouslySetInnerHTML={{ __html: churchPlaceholderSvg }}
+                  />
+                )}
+                
+                {/* Content */}
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-foreground text-sm leading-tight">
+                    {parish.name}
+                  </h3>
+                  
+                  {parish.nextEventTime && parish.nextEventType && (
+                    <p className="text-xs text-muted-foreground">
+                      {parish.nextEventType} hoje: <span className="font-medium text-foreground">{parish.nextEventTime}</span>
+                    </p>
                   )}
                   
-                  {/* Content */}
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-foreground text-sm leading-tight">
-                      {parish.name}
-                    </h3>
-                    
-                    {parish.nextEventTime && parish.nextEventType && (
-                      <p className="text-xs text-muted-foreground">
-                        {parish.nextEventType} hoje: <span className="font-medium text-foreground">{parish.nextEventTime}</span>
-                      </p>
-                    )}
-                    
-                    <Button
-                      size="sm"
-                      className="w-full mt-2"
-                      onClick={() => navigate(`/paroquia/${parish.id}`)}
-                    >
-                      Ver Perfil
-                    </Button>
-                  </div>
+                  <Button
+                    size="sm"
+                    className="w-full mt-2"
+                    onClick={() => navigate(`/paroquia/${parish.id}`)}
+                  >
+                    Ver Perfil
+                  </Button>
                 </div>
-              </Popup>
-            </Marker>
-          );
-        })}
+              </div>
+            </Popup>
+          </Marker>
+        ))}
       </MapContainer>
     </div>
   );
-};
+}
 
 export default ParishMapContent;
