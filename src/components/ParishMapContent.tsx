@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, CircleMarker } from "react-leaflet";
 import L from "leaflet";
 import { useNavigate } from "react-router-dom";
 import { Church } from "lucide-react";
@@ -131,12 +131,14 @@ const createUserLocationIcon = () => {
 
 // User location marker component
 const UserLocationMarker = ({ location }: { location: UserLocation }) => {
+  const userIcon = useMemo(() => createUserLocationIcon(), []);
+  
   return (
     <>
-      {/* Accuracy circle */}
-      <Circle
+      {/* Accuracy circle - using CircleMarker for better compatibility */}
+      <CircleMarker
         center={[location.lat, location.lng]}
-        radius={100}
+        radius={40}
         pathOptions={{
           color: "#3b82f6",
           fillColor: "#3b82f6",
@@ -147,7 +149,7 @@ const UserLocationMarker = ({ location }: { location: UserLocation }) => {
       {/* User marker */}
       <Marker
         position={[location.lat, location.lng]}
-        icon={createUserLocationIcon()}
+        icon={userIcon}
       >
         <Popup>
           <div className="text-center py-1">
@@ -222,52 +224,55 @@ const ParishMapContent = () => {
         {location && <UserLocationMarker location={location} />}
         
         {/* Parish markers */}
-        {parishes.map((parish) => (
-          <Marker
-            key={parish.id}
-            position={[parish.lat, parish.lng]}
-            icon={createCustomIcon(parish.status)}
-          >
-            <Popup className="parish-popup">
-              <div className="min-w-[200px] max-w-[250px]">
-                {/* Thumbnail */}
-                {parish.imageUrl ? (
-                  <img
-                    src={parish.imageUrl}
-                    alt={parish.name}
-                    className="w-full h-24 object-cover rounded-t-lg -mt-3 -mx-3 mb-3"
-                    style={{ width: "calc(100% + 24px)" }}
-                  />
-                ) : (
-                  <div className="w-full h-24 bg-muted rounded-t-lg -mt-3 -mx-3 mb-3 flex items-center justify-center" style={{ width: "calc(100% + 24px)" }}>
-                    <Church className="w-8 h-8 text-muted-foreground" />
-                  </div>
-                )}
-                
-                {/* Content */}
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-foreground text-sm leading-tight">
-                    {parish.name}
-                  </h3>
-                  
-                  {parish.nextEventTime && parish.nextEventType && (
-                    <p className="text-xs text-muted-foreground">
-                      {parish.nextEventType} hoje: <span className="font-medium text-foreground">{parish.nextEventTime}</span>
-                    </p>
+        {parishes.map((parish) => {
+          const icon = createCustomIcon(parish.status);
+          return (
+            <Marker
+              key={parish.id}
+              position={[parish.lat, parish.lng]}
+              icon={icon}
+            >
+              <Popup className="parish-popup">
+                <div className="min-w-[200px] max-w-[250px]">
+                  {/* Thumbnail */}
+                  {parish.imageUrl ? (
+                    <img
+                      src={parish.imageUrl}
+                      alt={parish.name}
+                      className="w-full h-24 object-cover rounded-t-lg -mt-3 -mx-3 mb-3"
+                      style={{ width: "calc(100% + 24px)" }}
+                    />
+                  ) : (
+                    <div className="w-full h-24 bg-muted rounded-t-lg -mt-3 -mx-3 mb-3 flex items-center justify-center" style={{ width: "calc(100% + 24px)" }}>
+                      <Church className="w-8 h-8 text-muted-foreground" />
+                    </div>
                   )}
                   
-                  <Button
-                    size="sm"
-                    className="w-full mt-2"
-                    onClick={() => navigate(`/paroquia/${parish.id}`)}
-                  >
-                    Ver Perfil
-                  </Button>
+                  {/* Content */}
+                  <div className="space-y-2">
+                    <h3 className="font-semibold text-foreground text-sm leading-tight">
+                      {parish.name}
+                    </h3>
+                    
+                    {parish.nextEventTime && parish.nextEventType && (
+                      <p className="text-xs text-muted-foreground">
+                        {parish.nextEventType} hoje: <span className="font-medium text-foreground">{parish.nextEventTime}</span>
+                      </p>
+                    )}
+                    
+                    <Button
+                      size="sm"
+                      className="w-full mt-2"
+                      onClick={() => navigate(`/paroquia/${parish.id}`)}
+                    >
+                      Ver Perfil
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+              </Popup>
+            </Marker>
+          );
+        })}
       </MapContainer>
     </div>
   );
