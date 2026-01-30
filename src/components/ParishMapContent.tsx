@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { useEvents } from "@/hooks/useEvents";
 import { useGeolocation, UserLocation } from "@/hooks/useGeolocation";
 
@@ -50,7 +49,7 @@ const churchIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height
 const navigationIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>`;
 const churchPlaceholderSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: #9ca3af;"><path d="m18 7 4 2v11a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9l4-2"/><path d="M14 22v-4a2 2 0 0 0-4 0v4"/><path d="M18 22V5l-6-3-6 3v17"/><path d="M12 7v5"/><path d="M10 9h4"/></svg>`;
 
-// Create custom div icons for markers using inline HTML
+// Create custom div icons for markers
 function createCustomIcon(status: "official" | "community" | "unverified") {
   const isOfficial = status === "official";
   const bgColor = isOfficial ? "#fbbf24" : "#2563eb";
@@ -146,13 +145,87 @@ function createUserLocationIcon() {
 // Memoized icons
 const userLocationIcon = createUserLocationIcon();
 
+// Popup content component - uses plain HTML to avoid React context issues
+function ParishPopupContent({ parish, onNavigate }: { parish: ParishMarker; onNavigate: () => void }) {
+  return (
+    <div className="parish-popup-content" style={{ minWidth: 200, maxWidth: 250 }}>
+      {parish.imageUrl ? (
+        <img
+          src={parish.imageUrl}
+          alt={parish.name}
+          style={{ 
+            width: "calc(100% + 24px)", 
+            height: 96, 
+            objectFit: "cover",
+            borderRadius: "8px 8px 0 0",
+            margin: "-12px -12px 12px -12px"
+          }}
+        />
+      ) : (
+        <div 
+          style={{ 
+            width: "calc(100% + 24px)", 
+            height: 96,
+            backgroundColor: "#f3f4f6",
+            borderRadius: "8px 8px 0 0",
+            margin: "-12px -12px 12px -12px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
+          }}
+          dangerouslySetInnerHTML={{ __html: churchPlaceholderSvg }}
+        />
+      )}
+      
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <h3 style={{ 
+          fontWeight: 600, 
+          fontSize: 14, 
+          lineHeight: 1.25,
+          margin: 0,
+          color: "#1f2937"
+        }}>
+          {parish.name}
+        </h3>
+        
+        {parish.nextEventTime && parish.nextEventType && (
+          <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>
+            {parish.nextEventType} hoje: <span style={{ fontWeight: 500, color: "#1f2937" }}>{parish.nextEventTime}</span>
+          </p>
+        )}
+        
+        <button
+          onClick={onNavigate}
+          style={{
+            width: "100%",
+            marginTop: 8,
+            padding: "8px 16px",
+            backgroundColor: "#2563eb",
+            color: "white",
+            border: "none",
+            borderRadius: 6,
+            fontSize: 14,
+            fontWeight: 500,
+            cursor: "pointer",
+            transition: "background-color 0.2s"
+          }}
+          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#1d4ed8")}
+          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#2563eb")}
+        >
+          Ver Perfil
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function ParishMapContent() {
   const navigate = useNavigate();
   const { location } = useGeolocation();
   const { data: events } = useEvents(location);
   const [isMapReady, setIsMapReady] = useState(false);
 
-  // Group events by parish and get unique parishes with their next event
+  // Group events by parish
   const parishes = useMemo<ParishMarker[]>(() => {
     if (!events) return [];
 
@@ -183,7 +256,7 @@ function ParishMapContent() {
     return Array.from(parishMap.values());
   }, [events]);
 
-  // Determine map center based on user location or default
+  // Determine map center
   const mapCenter = useMemo<[number, number]>(() => {
     if (location) {
       return [location.lat, location.lng];
@@ -217,14 +290,11 @@ function ParishMapContent() {
         
         {/* User location marker */}
         {isMapReady && location && (
-          <Marker
-            position={[location.lat, location.lng]}
-            icon={userLocationIcon}
-          >
+          <Marker position={[location.lat, location.lng]} icon={userLocationIcon}>
             <Popup>
-              <div className="text-center py-1">
-                <p className="font-medium text-sm">Você está aqui</p>
-              </div>
+              <p style={{ textAlign: "center", fontWeight: 500, fontSize: 14, margin: 0, padding: 4 }}>
+                Você está aqui
+              </p>
             </Popup>
           </Marker>
         )}
@@ -237,44 +307,10 @@ function ParishMapContent() {
             icon={parishIcons[parish.id]}
           >
             <Popup>
-              <div className="min-w-[200px] max-w-[250px]">
-                {/* Thumbnail */}
-                {parish.imageUrl ? (
-                  <img
-                    src={parish.imageUrl}
-                    alt={parish.name}
-                    className="w-full h-24 object-cover rounded-t-lg -mt-3 -mx-3 mb-3"
-                    style={{ width: "calc(100% + 24px)" }}
-                  />
-                ) : (
-                  <div 
-                    className="w-full h-24 bg-muted rounded-t-lg -mt-3 -mx-3 mb-3 flex items-center justify-center" 
-                    style={{ width: "calc(100% + 24px)" }}
-                    dangerouslySetInnerHTML={{ __html: churchPlaceholderSvg }}
-                  />
-                )}
-                
-                {/* Content */}
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-foreground text-sm leading-tight">
-                    {parish.name}
-                  </h3>
-                  
-                  {parish.nextEventTime && parish.nextEventType && (
-                    <p className="text-xs text-muted-foreground">
-                      {parish.nextEventType} hoje: <span className="font-medium text-foreground">{parish.nextEventTime}</span>
-                    </p>
-                  )}
-                  
-                  <Button
-                    size="sm"
-                    className="w-full mt-2"
-                    onClick={() => navigate(`/paroquia/${parish.id}`)}
-                  >
-                    Ver Perfil
-                  </Button>
-                </div>
-              </div>
+              <ParishPopupContent 
+                parish={parish} 
+                onNavigate={() => navigate(`/paroquia/${parish.id}`)} 
+              />
             </Popup>
           </Marker>
         ))}
