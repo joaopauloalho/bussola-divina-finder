@@ -19,6 +19,7 @@ export type Database = {
           created_at: string
           day_of_week: number
           id: string
+          notes: string | null
           parish_id: string
           time: string
           type: Database["public"]["Enums"]["event_type"]
@@ -29,6 +30,7 @@ export type Database = {
           created_at?: string
           day_of_week: number
           id?: string
+          notes?: string | null
           parish_id: string
           time: string
           type: Database["public"]["Enums"]["event_type"]
@@ -39,6 +41,7 @@ export type Database = {
           created_at?: string
           day_of_week?: number
           id?: string
+          notes?: string | null
           parish_id?: string
           time?: string
           type?: Database["public"]["Enums"]["event_type"]
@@ -94,7 +97,11 @@ export type Database = {
         Row: {
           address: string
           created_at: string
+          decanato: string | null
           description: string | null
+          diocese: string | null
+          email: string | null
+          facebook_url: string | null
           id: string
           image_url: string | null
           instagram_url: string | null
@@ -103,16 +110,26 @@ export type Database = {
           lat: number
           lng: number
           name: string
+          pastor_name: string | null
+          patron_saint: string | null
           phone: string | null
           pix_key: string | null
+          popular_name: string | null
+          secretary_hours: string | null
           updated_at: string
+          vicar_name: string | null
           website_url: string | null
           whatsapp: string | null
+          youtube_url: string | null
         }
         Insert: {
           address: string
           created_at?: string
+          decanato?: string | null
           description?: string | null
+          diocese?: string | null
+          email?: string | null
+          facebook_url?: string | null
           id?: string
           image_url?: string | null
           instagram_url?: string | null
@@ -121,16 +138,26 @@ export type Database = {
           lat: number
           lng: number
           name: string
+          pastor_name?: string | null
+          patron_saint?: string | null
           phone?: string | null
           pix_key?: string | null
+          popular_name?: string | null
+          secretary_hours?: string | null
           updated_at?: string
+          vicar_name?: string | null
           website_url?: string | null
           whatsapp?: string | null
+          youtube_url?: string | null
         }
         Update: {
           address?: string
           created_at?: string
+          decanato?: string | null
           description?: string | null
+          diocese?: string | null
+          email?: string | null
+          facebook_url?: string | null
           id?: string
           image_url?: string | null
           instagram_url?: string | null
@@ -139,11 +166,17 @@ export type Database = {
           lat?: number
           lng?: number
           name?: string
+          pastor_name?: string | null
+          patron_saint?: string | null
           phone?: string | null
           pix_key?: string | null
+          popular_name?: string | null
+          secretary_hours?: string | null
           updated_at?: string
+          vicar_name?: string | null
           website_url?: string | null
           whatsapp?: string | null
+          youtube_url?: string | null
         }
         Relationships: []
       }
