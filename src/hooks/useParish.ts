@@ -18,6 +18,17 @@ export interface Parish {
   whatsapp: string | null;
   created_at: string;
   updated_at: string;
+  // New fields
+  email: string | null;
+  popular_name: string | null;
+  diocese: string | null;
+  decanato: string | null;
+  pastor_name: string | null;
+  vicar_name: string | null;
+  facebook_url: string | null;
+  youtube_url: string | null;
+  secretary_hours: string | null;
+  patron_saint: string | null;
 }
 
 export interface ParishEvent {
@@ -27,6 +38,7 @@ export interface ParishEvent {
   day_of_week: number;
   time: string;
   verification_score: number;
+  notes: string | null;
 }
 
 export interface Pastoral {
