@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap, CircleMarker } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import { useNavigate } from "react-router-dom";
 import { Church } from "lucide-react";
@@ -99,21 +99,35 @@ const createCustomIcon = (status: "official" | "community" | "unverified") => {
   });
 };
 
-// Create user location icon using inline HTML
+// Create user location icon using inline HTML with pulsing effect
 const createUserLocationIcon = () => {
   const iconHtml = `
-    <div style="position: relative;">
+    <div style="position: relative; width: 48px; height: 48px;">
       <div style="
-        width: 24px;
-        height: 24px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 48px;
+        height: 48px;
+        background-color: rgba(59, 130, 246, 0.2);
+        border-radius: 50%;
+        animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      "></div>
+      <div style="
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 20px;
+        height: 20px;
         background-color: #3b82f6;
         border: 3px solid white;
         border-radius: 50%;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         display: flex;
         align-items: center;
         justify-content: center;
-        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         color: white;
       ">
         ${navigationIconSvg}
@@ -124,40 +138,26 @@ const createUserLocationIcon = () => {
   return L.divIcon({
     html: iconHtml,
     className: "user-location-marker",
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
+    iconSize: [48, 48],
+    iconAnchor: [24, 24],
   });
 };
 
-// User location marker component
+// User location marker component - simplified without CircleMarker
 const UserLocationMarker = ({ location }: { location: UserLocation }) => {
   const userIcon = useMemo(() => createUserLocationIcon(), []);
   
   return (
-    <>
-      {/* Accuracy circle - using CircleMarker for better compatibility */}
-      <CircleMarker
-        center={[location.lat, location.lng]}
-        radius={40}
-        pathOptions={{
-          color: "#3b82f6",
-          fillColor: "#3b82f6",
-          fillOpacity: 0.1,
-          weight: 1,
-        }}
-      />
-      {/* User marker */}
-      <Marker
-        position={[location.lat, location.lng]}
-        icon={userIcon}
-      >
-        <Popup>
-          <div className="text-center py-1">
-            <p className="font-medium text-sm">Você está aqui</p>
-          </div>
-        </Popup>
-      </Marker>
-    </>
+    <Marker
+      position={[location.lat, location.lng]}
+      icon={userIcon}
+    >
+      <Popup>
+        <div className="text-center py-1">
+          <p className="font-medium text-sm">Você está aqui</p>
+        </div>
+      </Popup>
+    </Marker>
   );
 };
 
